@@ -14,6 +14,8 @@ const TAU = Math.PI * 2;
 let width = 0;
 let height = 0;
 let dpr = 1;
+let mobileMode = false;
+let lastRenderTime = 0;
 let nodes = [];
 let links = [];
 let pulses = [];
@@ -98,9 +100,10 @@ function heapPop(heap) {
 }
 
 function resize() {
-  dpr = Math.min(devicePixelRatio || 1, 2);
   width = window.innerWidth;
   height = window.innerHeight;
+  mobileMode = window.matchMedia('(pointer: coarse)').matches || width <= 760;
+  dpr = Math.min(devicePixelRatio || 1, mobileMode ? 1.25 : 2);
   canvas.width = Math.round(width * dpr);
   canvas.height = Math.round(height * dpr);
   canvas.style.width = `${width}px`;
@@ -110,7 +113,8 @@ function resize() {
 }
 
 function createStars() {
-  const amount = Math.min(260, Math.floor((width * height) / 6500));
+  const limit = mobileMode ? 110 : 260;
+  const amount = Math.min(limit, Math.floor((width * height) / (mobileMode ? 10500 : 6500)));
   stars = Array.from({ length: amount }, () => ({
     x: Math.random() * width,
     y: Math.random() * height,
@@ -473,7 +477,7 @@ function drawCrystals(seconds) {
     ctx.fillStyle = `rgba(${r},${g},${b},${crystal.intensity * .022})`;
     ctx.lineWidth = .8;
     ctx.shadowColor = `rgba(${r},${g},${b},.5)`;
-    ctx.shadowBlur = 9 * crystal.intensity;
+    ctx.shadowBlur = mobileMode ? 0 : 9 * crystal.intensity;
     ctx.beginPath();
     shaped.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
     ctx.closePath();
@@ -492,8 +496,14 @@ function drawCrystals(seconds) {
 }
 
 function draw(time) {
+  const targetFps = mobileMode ? (displayCount > 1000 ? 24 : 30) : 60;
+  if (time - lastRenderTime < 1000 / targetFps) {
+    requestAnimationFrame(draw);
+    return;
+  }
+  lastRenderTime = time;
   const seconds = time * .001;
-  const dt = Math.min(.04, (time - lastTime) / 1000);
+  const dt = Math.min(.05, (time - lastTime) / 1000);
   lastTime = time;
   rotation.x += (targetRotation.x - rotation.x) * .06;
   rotation.y += (targetRotation.y - rotation.y) * .06;
@@ -557,24 +567,31 @@ function draw(time) {
     const y = a.y + (b.y - a.y) * pulse.t;
     const radius = Math.max(.5, Math.min(48, 7 * ((a.scale + b.scale) * .5)));
     const [ar, ag, ab] = palette.accent;
-    const g = ctx.createRadialGradient(x, y, 0, x, y, radius);
-    g.addColorStop(0, `rgba(${ar},${ag},${ab},.9)`);
-    g.addColorStop(.2, `rgba(${ar},${ag},${ab},.4)`);
-    g.addColorStop(1, `rgba(${ar},${ag},${ab},0)`);
-    ctx.fillStyle = g;
+    if (mobileMode) {
+      ctx.fillStyle = `rgba(${ar},${ag},${ab},.78)`;
+    } else {
+      const g = ctx.createRadialGradient(x, y, 0, x, y, radius);
+      g.addColorStop(0, `rgba(${ar},${ag},${ab},.9)`);
+      g.addColorStop(.2, `rgba(${ar},${ag},${ab},.4)`);
+      g.addColorStop(1, `rgba(${ar},${ag},${ab},0)`);
+      ctx.fillStyle = g;
+    }
     ctx.beginPath();
-    ctx.arc(x, y, radius, 0, TAU);
+    ctx.arc(x, y, mobileMode ? Math.min(3.5, radius * .45) : radius, 0, TAU);
     ctx.fill();
   }
 
   const sorted = nodes.filter(node => node.projected?.visible).sort((a, b) => b.projected.z - a.projected.z);
+  let haloBudget = mobileMode ? (displayCount > 1000 ? 48 : 80) : Infinity;
   for (const node of sorted) {
     const p = node.projected;
     const depth = Math.max(.13, Math.min(1.2, 1 - (p.z + 390) / 1400));
     const beat = .78 + Math.sin(seconds * (1 + node.speed) + node.phase) * .22;
     const activation = node.focus * .38 + node.memory * .24 + node.wave * .82 + node.crystal * .45;
     const r = Math.max(.2, Math.min(24, node.size * p.scale * (node.energy > .88 ? 1.3 : 1) * (1 + activation)));
-    if (r > 1.2) {
+    const drawHalo = r > 1.2 && (!mobileMode || (haloBudget > 0 && (activation > .04 || node.energy > .52)));
+    if (drawHalo) {
+      haloBudget--;
       const halo = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 5.5);
       halo.addColorStop(0, `rgba(${palette.bright.join(',')},${Math.min(.9, .48 * beat * depth + node.wave * .28 + node.focus * .14 + node.crystal * .18)})`);
       halo.addColorStop(.2, `rgba(${palette.accent.join(',')},${Math.min(.48, .18 * beat * depth + node.memory * .11)})`);
@@ -951,6 +968,11 @@ soundButton.addEventListener('click', toggleSound);
 window.addEventListener('pointerdown', activateDefaultSound, { once: true, capture: true });
 window.addEventListener('keydown', activateDefaultSound, { once: true, capture: true });
 window.addEventListener('resize', resize);
+document.addEventListener('visibilitychange', () => {
+  if (!audio) return;
+  if (document.hidden) audio.context.suspend();
+  else if (soundIsOn()) audio.context.resume();
+});
 resize();
 generateNetwork(480);
 requestAnimationFrame(draw);
