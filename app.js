@@ -1,6 +1,12 @@
 const canvas = document.querySelector('#space');
 const ctx = canvas.getContext('2d', { alpha: false });
+const app = document.querySelector('#app');
+const brand = document.querySelector('.brand');
 const form = document.querySelector('#generator');
+const enterVoid = document.querySelector('#enterVoid');
+const mobileDock = document.querySelector('#mobileDock');
+const mobileDockCount = document.querySelector('#mobileDockCount');
+const sheetClose = document.querySelector('#sheetClose');
 const countInput = document.querySelector('#nodeCount');
 const rangeInput = document.querySelector('#nodeRange');
 const activeEl = document.querySelector('#activeNodes');
@@ -15,6 +21,7 @@ let width = 0;
 let height = 0;
 let dpr = 1;
 let mobileMode = false;
+let mobileExperience = false;
 let lastRenderTime = 0;
 let nodes = [];
 let links = [];
@@ -36,6 +43,7 @@ let displayCount = 480;
 let audio = null;
 let lastNeuralSound = 0;
 let nextAutoWave = 0;
+let mobileIntroTimer = 0;
 
 const LAYERS = [
   { name: 'SURFACE', line: [128, 211, 120], bright: [218, 255, 148], dim: [150, 213, 139], accent: [195, 255, 112] },
@@ -102,7 +110,9 @@ function heapPop(heap) {
 function resize() {
   width = window.innerWidth;
   height = window.innerHeight;
-  mobileMode = window.matchMedia('(pointer: coarse)').matches || width <= 760;
+  const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  mobileMode = coarsePointer || width <= 760;
+  mobileExperience = width <= 760 || (coarsePointer && width <= 950);
   dpr = Math.min(devicePixelRatio || 1, mobileMode ? 1.25 : 2);
   canvas.width = Math.round(width * dpr);
   canvas.height = Math.round(height * dpr);
@@ -222,6 +232,7 @@ function generateNetwork(requested) {
 function setRangeFill() {
   const pct = ((Number(rangeInput.value) - 50) / 1950) * 100;
   rangeInput.style.setProperty('--fill', `${pct}%`);
+  mobileDockCount.textContent = `${Number(countInput.value)} NODES`;
 }
 
 function flashGeneration() {
@@ -252,7 +263,7 @@ function rotatePoint(node, time) {
   }
   const perspective = 780 / cameraDepth;
   return {
-    x: width * (width < 760 ? .62 : .67) + x1 * perspective * zoom,
+    x: width * (mobileExperience ? .62 : .67) + x1 * perspective * zoom,
     y: height * .5 + y1 * perspective * zoom,
     z: z2,
     scale: perspective * zoom,
@@ -617,6 +628,7 @@ function clampCount(value) { return Math.max(50, Math.min(2000, Math.round(Numbe
 form.addEventListener('submit', event => {
   event.preventDefault();
   generateNetwork(clampCount(countInput.value));
+  if (mobileExperience) app.classList.remove('sheet-open');
 });
 
 rangeInput.addEventListener('input', () => {
@@ -688,6 +700,29 @@ canvas.addEventListener('wheel', event => {
 depthStateEl.addEventListener('click', () => {
   targetLayerDepth = (Math.round(targetLayerDepth) + 1) % LAYERS.length;
   targetZoom = 1 + targetLayerDepth * .27;
+});
+
+function enterMobileExperience() {
+  if (!mobileExperience) return;
+  window.clearTimeout(mobileIntroTimer);
+  app.classList.add('immersive');
+  app.classList.remove('sheet-open');
+}
+
+function showMobileIntro() {
+  if (!mobileExperience) return;
+  app.classList.remove('immersive', 'sheet-open');
+  window.clearTimeout(mobileIntroTimer);
+  mobileIntroTimer = window.setTimeout(enterMobileExperience, 7000);
+}
+
+enterVoid.addEventListener('click', enterMobileExperience);
+mobileDock.addEventListener('click', () => app.classList.add('sheet-open'));
+sheetClose.addEventListener('click', () => app.classList.remove('sheet-open'));
+brand.addEventListener('click', event => {
+  if (!mobileExperience) return;
+  event.preventDefault();
+  showMobileIntro();
 });
 
 function soundIsOn() {

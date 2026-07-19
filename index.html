@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="app">
+    <main class="app" id="app">
       <canvas id="space" aria-label="An infinite visualization of neural nodes"></canvas>
       <div class="grain" aria-hidden="true"></div>
       <div class="vignette" aria-hidden="true"></div>
@@ -28,8 +28,10 @@
         <p class="eyebrow"><span>01</span> SYNAPTIC FIELD GENERATOR</p>
         <h1 id="title">Beyond thought.</h1>
         <p class="lead">Dissolve the boundaries of consciousness,<br />and connect to an infinite neural universe.</p>
+        <button class="enter-void" id="enterVoid" type="button"><span>ENTER THE VOID</span><span>↗</span></button>
 
         <form class="generator" id="generator">
+          <button class="sheet-close" id="sheetClose" type="button" aria-label="Close node generator">×</button>
           <label for="nodeCount">NUMBER OF NODES</label>
           <div class="input-row">
             <button class="stepper" type="button" data-step="-100" aria-label="Decrease by 100">−</button>
@@ -49,6 +51,10 @@
           </div>
         </form>
       </section>
+
+      <button class="mobile-dock" id="mobileDock" type="button" aria-label="Open node generator">
+        <span id="mobileDockCount">480 NODES</span><i>＋</i>
+      </button>
 
       <aside class="metrics" aria-label="Spatial metrics">
         <div><span>ACTIVE NODES</span><strong id="activeNodes">0480</strong></div>
