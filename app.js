@@ -711,18 +711,18 @@ function ensureAudio() {
   const reverbFilter = context.createBiquadFilter();
   const reverbGain = context.createGain();
 
-  master.gain.value = .72;
+  master.gain.value = .9;
   compressor.threshold.value = -18;
   compressor.knee.value = 14;
   compressor.ratio.value = 4;
   compressor.attack.value = .008;
   compressor.release.value = .3;
-  ambientGain.gain.value = .028;
+  ambientGain.gain.value = .04;
   ambientFilter.type = 'lowpass';
   ambientFilter.frequency.value = 420;
-  fxBus.gain.value = .52;
-  sparkBus.gain.value = .46;
-  neuralBus.gain.value = .42;
+  fxBus.gain.value = .6;
+  sparkBus.gain.value = .56;
+  neuralBus.gain.value = .5;
   reverbFilter.type = 'lowpass';
   reverbFilter.frequency.value = 2600;
   reverbGain.gain.value = .15;
@@ -734,12 +734,19 @@ function ensureAudio() {
   neuralBus.connect(master);
   master.connect(compressor).connect(context.destination);
 
-  [55, 82.5, 110].forEach((frequency, index) => {
+  const ambientVoices = [
+    { frequency: 55, level: .5, type: 'triangle' },
+    { frequency: 82.5, level: .18, type: 'sine' },
+    { frequency: 110, level: .18, type: 'triangle' },
+    { frequency: 165, level: .08, type: 'sine' },
+    { frequency: 220, level: .035, type: 'sine' }
+  ];
+  ambientVoices.forEach(({ frequency, level, type }) => {
     const osc = context.createOscillator();
     const gain = context.createGain();
-    osc.type = index === 1 ? 'sine' : 'triangle';
+    osc.type = type;
     osc.frequency.value = frequency;
-    gain.gain.value = index === 0 ? .5 : .18;
+    gain.gain.value = level;
     osc.connect(gain).connect(ambientFilter);
     osc.start();
   });
