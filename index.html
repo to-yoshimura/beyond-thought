@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#050908" />
+    <title>NEURAL VOID — Infinite Neural Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <canvas id="space" aria-label="An infinite visualization of neural nodes"></canvas>
+      <div class="grain" aria-hidden="true"></div>
+      <div class="vignette" aria-hidden="true"></div>
+
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Neural Void home">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>NEURAL VOID</span>
+        </a>
+        <div class="system-status"><span></span> SYSTEM / CONSCIOUS</div>
+      </header>
+
+      <section class="hero" aria-labelledby="title">
+        <p class="eyebrow"><span>01</span> SYNAPTIC FIELD GENERATOR</p>
+        <h1 id="title">Beyond thought.</h1>
+        <p class="lead">Dissolve the boundaries of consciousness,<br />and connect to an infinite neural universe.</p>
+
+        <form class="generator" id="generator">
+          <label for="nodeCount">NUMBER OF NODES</label>
+          <div class="input-row">
+            <button class="stepper" type="button" data-step="-100" aria-label="Decrease by 100">−</button>
+            <div class="number-wrap">
+              <input id="nodeCount" type="number" min="50" max="2000" step="50" value="480" inputmode="numeric" />
+              <span>NODES</span>
+            </div>
+            <button class="stepper" type="button" data-step="100" aria-label="Increase by 100">＋</button>
+            <button class="generate" type="submit">
+              <span>GENERATE</span><span class="arrow">↗</span>
+            </button>
+          </div>
+          <div class="range-row">
+            <span>50</span>
+            <input id="nodeRange" type="range" min="50" max="2000" step="10" value="480" aria-label="Number of nodes" />
+            <span>2K</span>
+          </div>
+        </form>
+      </section>
+
+      <aside class="metrics" aria-label="Spatial metrics">
+        <div><span>ACTIVE NODES</span><strong id="activeNodes">0480</strong></div>
+        <div><span>SYNAPSES</span><strong id="synapses">0000</strong></div>
+        <div><span>DEPTH</span><button id="depthState" type="button" aria-label="Change consciousness layer">SURFACE</button></div>
+      </aside>
+
+      <div class="coordinates" aria-hidden="true">
+        <span id="coords">X 00.00&nbsp;&nbsp;Y 00.00&nbsp;&nbsp;Z ∞</span>
+        <i></i>
+      </div>
+
+      <div class="hint"><span class="mouse-icon"></span> CLICK TO STIMULATE <i></i> DRAG TO EXPLORE <i></i> SCROLL THROUGH LAYERS</div>
+
+      <button class="sound" id="soundToggle" type="button" aria-label="Toggle ambient sound" aria-pressed="true">
+        <span class="sound-bars"><i></i><i></i><i></i><i></i></span>
+        <span id="soundLabel">SOUND ON</span>
+      </button>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>
