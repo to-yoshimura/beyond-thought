@@ -39,7 +39,7 @@ let targetLayerDepth = 0;
 let dragging = false;
 let pointer = { x: 0, y: 0, lastX: 0, lastY: 0, downX: 0, downY: 0, active: false, moved: false };
 let lastTime = performance.now();
-let displayCount = 480;
+let displayCount = 500;
 let audio = null;
 let lastNeuralSound = 0;
 let nextAutoWave = 0;
@@ -135,7 +135,7 @@ function createStars() {
 }
 
 function generateNetwork(requested) {
-  const count = Math.max(50, Math.min(2000, Number(requested) || 480));
+  const count = Math.max(50, Math.min(2000, Number(requested) || 500));
   displayCount = count;
   nodes = [];
   links = [];
@@ -1016,5 +1016,5 @@ document.addEventListener('visibilitychange', () => {
   else if (soundIsOn()) audio.context.resume();
 });
 resize();
-generateNetwork(480);
+generateNetwork(500);
 requestAnimationFrame(draw);
